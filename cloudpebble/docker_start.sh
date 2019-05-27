@@ -1,7 +1,7 @@
 #!/bin/sh
 sleep 1
 if [ ! -z "$RUN_WEB" ]; then
-	# Make sure the database is up to date.
+	# Make sure the database is up to date so yeah.
 	echo "Performing database migration."
 	python manage.py syncdb --noinput
 	python manage.py migrate
