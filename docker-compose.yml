@@ -21,6 +21,7 @@ web:
     - YCM_URLS=http://192.168.99.100:8002/
     - PUBLIC_URL=http://192.168.99.100/
     - LIBPEBBLE_PROXY=wss://cloudpebble-ws.herokuapp.com/tool
+    - PEBBLE_AUTH_URL=https://auth.rebble.io
 celery:
   build: cloudpebble/
   volumes:
