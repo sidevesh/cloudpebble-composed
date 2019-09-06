@@ -1,0 +1,12 @@
+MYIP=Public IP of sever
+PEBBLE_AUTH_KEY=Rebble Client ID
+PEBBLE_AUTH_SECRET=Rebble Secrey Ket
+PEBBLE_AUTH_URL=Authorization Url (auth.rebble.io)
+PEBBLE_TIMELINE_PUBLIC_API=timeline-api server
+PEBBLE_TIMELINE_INTERNAL_API=timeline-sync server
+SECRET_KEY=secret key for cloudpebble
+GITHUB_ID=githib client id for app
+GITHUB_SECRET=github secret for app
+AWS_ACCESS_KEY_ID=aws access key
+AWS_SECRET_ACCESS_KEY=aws secet
+FAKE_S3_LICENSE=license for fske s3 (not used at this time)

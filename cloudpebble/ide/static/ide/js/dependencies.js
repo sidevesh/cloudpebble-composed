@@ -598,7 +598,7 @@ CloudPebble.Dependencies = (function() {
         if (CloudPebble.Sidebar.Restore("dependencies")) {
             return;
         }
-        ga('send', 'event', 'project', 'load dependencies');
+        // ga('send', 'event', 'project', 'load dependencies');
         setup_dependencies_pane(dependencies_template);
         CloudPebble.Sidebar.SetActivePane(dependencies_template, {id: 'dependencies'});
     }

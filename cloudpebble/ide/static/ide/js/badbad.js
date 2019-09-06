@@ -14,7 +14,7 @@ var CloudPebble = CloudPebble || {};
             if(collections) {
                 params.collections = JSON.stringify(collections);
             }
-            $.post('/ide/project/' + PROJECT_ID + '/analytics', params);
+            // $.post('/ide/project/' + PROJECT_ID + '/analytics', params);
         }
     })();
 })();

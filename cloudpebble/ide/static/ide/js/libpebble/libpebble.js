@@ -134,13 +134,13 @@ Pebble = function(proxy, token) {
     var handle_socket_error = function(e) {
         console.log("Socket error: " + e);
         self.trigger('error', e);
-        ga('send', 'event', 'phone-error');
+        // ga('send', 'event', 'phone-error');
     };
 
     var handle_socket_open = function(e) {
         console.log("Socket open");
         mHasConnected = true;
-        ga('send', 'event', 'phone-connect', 'success');
+        // ga('send', 'event', 'phone-connect', 'success');
         self.trigger('open');
     };
 
@@ -150,13 +150,13 @@ Pebble = function(proxy, token) {
             console.log("Close was unexpected.");
             if(!mHasConnected) {
                 self.trigger("error", "Connection to the phone failed. Check the IP and that developer mode is active.");
-                ga('send', 'event', 'phone-connect', 'failed');
+                // ga('send', 'event', 'phone-connect', 'failed');
             } else {
                 self.trigger("error", "Connection to the phone was interrupted.");
-                ga('send', 'event', 'phone-disconnect', 'dirty');
+                // ga('send', 'event', 'phone-disconnect', 'dirty');
             }
         } else {
-            ga('send', 'event', 'phone-disconnect', 'clean');
+            // ga('send', 'event', 'phone-disconnect', 'clean');
         }
         self.trigger('close');
     };

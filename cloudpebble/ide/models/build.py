@@ -59,27 +59,27 @@ class BuildResult(IdeModel):
 
     @property
     def pbw(self):
-        return '%swatchface.pbw' % self._get_dir()
-
-    @property
-    def package(self):
-        return '%spackage.tar.gz' % self._get_dir()
-
-    @property
-    def package_url(self):
-        return '%spackage.tar.gz' % self.get_url()
-
-    @property
-    def build_log(self):
-        return '%sbuild_log.txt' % self._get_dir()
+        return '%sproject.pbw' % self._get_dir()
 
     @property
     def pbw_url(self):
-        return '%swatchface.pbw' % self.get_url()
+        return '%sproject.pbw' % self.get_url()
+
+    @property
+    def package(self):
+        return '%ssource.tar.gz' % self._get_dir()
+
+    @property
+    def package_url(self):
+        return '%ssource.tar.gz' % self.get_url()
+
+    @property
+    def build_log(self):
+        return '%scompile_log.txt' % self._get_dir()
 
     @property
     def build_log_url(self):
-        return '%sbuild_log.txt' % self.get_url()
+        return '%scompile_log.txt' % self.get_url()
 
     @property
     def simplyjs(self):

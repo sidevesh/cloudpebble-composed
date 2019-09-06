@@ -49,9 +49,9 @@ class UserSettings(IdeModel):
 
     autocomplete = models.IntegerField(choices=AUTOCOMPLETE_CHOICES, verbose_name=_("Autocompletion"), default=AUTOCOMPLETE_ALWAYS)
     keybinds = models.CharField(max_length=20, verbose_name=_("Keybinds"), choices=KEYBIND_CHOICES, default=KEYBIND_STANDARD)
-    theme = models.CharField(max_length=50, verbose_name=_("Theme"), choices=THEME_CHOICES, default='cloudpebble')
+    theme = models.CharField(max_length=50, verbose_name=_("Theme"), choices=THEME_CHOICES, default='solarized dark')
     use_spaces = models.BooleanField(default=True, verbose_name=pgettext_lazy("number of spaces", u"Indents"), choices=USE_SPACES_CHOICES)
-    tab_width = models.PositiveSmallIntegerField(default=2, verbose_name=_("Tab width"))
+    tab_width = models.PositiveSmallIntegerField(default=4, verbose_name=_("Tab width"))
 
     # Used for the Pebble ownership transition, when it was set to False.
     accepted_terms = models.BooleanField(default=True)

@@ -15,10 +15,10 @@ TRAVIS = 'TRAVIS' in _environ and os.environ["TRAVIS"] == "true"
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('Administrator', 'example@example.com'),
+    ('admin', 'gfunkmonk@gmail.com'),
 )
 
-DEFAULT_FROM_EMAIL = _environ.get('FROM_EMAIL', 'CloudPebble <cloudpebble@example.com>')
+DEFAULT_FROM_EMAIL = _environ.get('FROM_EMAIL', 'CloudPebble <cloudpebble@cloudpebble.tk>')
 
 ON_CLOUDFLARE = _environ.get('CLOUDFLARE') != ''
 if ON_CLOUDFLARE:
@@ -58,6 +58,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT': '600',
     }
 }
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__)) + '/../'
@@ -80,6 +81,13 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['*']
 
+# List of IP addresses, as strings, that:
+# * See debug comments, when DEBUG is true
+# * Receive x-headers
+INTERNAL_IPS = ['192.168.128.1' , '172.17.0.1']
+
+# Close the session when user closes the browser
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -95,12 +103,46 @@ LANGUAGES = (
     ('es', 'Spanish'),
     ('fr', 'French'),
     ('de', 'German'),
+    ('cy', 'Welsh'),
+    ('pl', 'Polish'),
+    ('ru', 'Russian'),
     ('zh-cn', 'Chinese (simplified'),
     ('zh-tw', 'Chinese (traditional)'),
+    ('ja', 'Japanese'),
+    ('vi', 'Vietnamese')
 )
 
 LOCALE_PATHS = (os.getcwd() + "/locale",)
 
+# Settings for language cookie
+LANGUAGE_COOKIE_NAME = 'cloudpebble_language'
+LANGUAGE_COOKIE_AGE = None
+LANGUAGE_COOKIE_DOMAIN = None
+LANGUAGE_COOKIE_PATH = '/'
+
+# Default content type and charset to use for all HttpResponse objects, if a
+# MIME type isn't manually specified. These are used to construct the# Content-Type header.
+DEFAULT_CONTENT_TYPE = 'text/html'
+DEFAULT_CHARSET = 'utf-8'
+
+# Encoding of files read from disk (template and initial SQL files).
+FILE_CHARSET = 'utf-8'
+
+# First day of week, to be used on calendars# 0 means Sunday, 1 means Monday...
+FIRST_DAY_OF_WEEK = 1
+
+# Decimal separator symbol
+DECIMAL_SEPARATOR = '.'
+
+# Boolean that sets whether to add thousand separator when formatting numbers
+USE_THOUSAND_SEPARATOR = True
+
+# Number of digits that will be together, when splitting them by
+# THOUSAND_SEPARATOR. 0 means no grouping, 3 means splitting by thousands...
+NUMBER_GROUPING = 3
+
+# Thousand separator symbol
+THOUSAND_SEPARATOR = ','
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -245,7 +287,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Uncomment the next line to enable the admin:
-    #'django.contrib.admin',
+    'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'social.apps.django_app.default',
@@ -257,6 +299,7 @@ INSTALLED_APPS = (
     'djcelery',
     'registration',
     'djangobower',
+    'django_extensions',
 )
 
 # This logging config prints:
