@@ -1,4 +1,4 @@
-FROM python:2.7.16-buster
+FROM python:2.7.16-stretch
 SHELL ["/bin/bash", "-c"]
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     gettext memcached postgresql-client libpq-dev \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-RUN pip install psycopg2 django==1.6.3
+RUN pip install psycopg2 django==1.6.2
 
 EXPOSE 8000
 
@@ -19,8 +19,7 @@ EXPOSE 8000
 RUN npm install -g bower && echo '{"allow_root": true}' > /root/.bowerrc
 
 # Grab the toolchain
-RUN mkdir /arm-cs-tools && \
-  curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
+RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
 
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt

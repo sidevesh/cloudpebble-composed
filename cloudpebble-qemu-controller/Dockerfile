@@ -1,25 +1,30 @@
-FROM python:2.7.16-buster
+FROM python:2.7.16-stretch
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install -y \
   libglib2.0-dev libpixman-1-dev libfdt-dev gnutls-dev \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /qemu && cd /qemu && \
-  curl -L https://github.com/gfunkmonk/qemu/archive/v2.5.0-pebble5.tar.gz | tar xz --strip 1 && \
+ENV IGNORE_WARNINGS=1
+RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
+#RUN mkdir /qemu && cd /qemu && \
+#  curl -L https://github.com/gfunkmonk/qemu/archive/v2.5.0-pebble5.tar.gz | tar xz --strip 1 && \
   ./configure \
      --enable-tcg-interpreter \
      --extra-ldflags=-g \
 #     --with-coroutine=gthread \
 #     --enable-debug-tcg \
-     --enable-debug --disable-werror --target-list="arm-softmmu" -std=gnu99 \
-     --disable-libiscsi --disable-libnfs --disable-libusb --disable-usb-redir \
-     --disable-strip --disable-xen --disable-kvm --disable-user --disable-docs \
-     --disable-gtk --disable-linux-aio --disable-curl --disable-curses --disable-vhdx \
-#     --extra-cflags=-DDEBUG_CLKTREE
+     --enable-debug --disable-werror --target-list="arm-softmmu" \
+#     --disable-libiscsi --disable-libnfs --disable-libusb --disable-usb-redir \
+#     --disable-strip --disable-xen --disable-kvm --disable-user --disable-docs \
+#     --disable-gtk --disable-linux-aio --disable-curl --disable-curses --disable-vhdx \
+#     --extra-cflags=-DDEBUG_CLKTREE \
 #     --extra-cflags=-DDEBUG_STM32_RCC \
 #     --extra-cflags=-DDEBUG_STM32_UART \
-#     --extra-cflags=-DDEBUG_GIC
+#     --extra-cflags=-DDEBUG_GIC \
+     --extra-cflags=-std=gnu99 \
+     --extra-cflags=-Wno-declaration-after-statement \
+     --extra-cflags=-Wno-old-style-declaration \
      --extra-cflags=-DSTM32_UART_NO_BAUD_DELAY \
      --extra-cflags=-DSTM32_UART_ENABLE_OVERRUN \
 #     --enable-vnc \
