@@ -1,10 +1,11 @@
-FROM python:2.7.16-stretch
+#FROM python:2.7.16
+FROM gfunkmonk/python2:xenial
 SHELL ["/bin/bash", "-c"]
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 
 RUN apt-get update && apt-get install -y \
-  cmake libtinfo5 clang-3.8 \
+  cmake libtinfo5 git curl \
    && rm -rf /var/lib/apt/lists/
 
 # ycmd

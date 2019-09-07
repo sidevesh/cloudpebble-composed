@@ -1,4 +1,6 @@
-FROM python:2.7.16-stretch
+#FROM python:2.7.16
+FROM gfunkmonk/python2:xenial
+
 SHELL ["/bin/bash", "-c"]
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
@@ -8,7 +10,7 @@ RUN npm install -g npm jshint jslint
 
 # Django stuff
 RUN apt-get update && apt-get install -y \
-    gettext memcached postgresql-client libpq-dev \
+    gettext memcached postgresql-client libpq-dev git curl \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 RUN pip install psycopg2 django==1.6.2

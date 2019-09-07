@@ -1,8 +1,9 @@
-FROM python:2.7.16-stretch
+#FROM python:2.7.16
+FROM gfunkmonk/python2:xenial
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install -y \
-  libglib2.0-dev libpixman-1-dev libfdt-dev gnutls-dev \
+  libglib2.0-dev libpixman-1-dev libfdt-dev gnutls-dev curl git \
   && rm -rf /var/lib/apt/lists/*
 
 ENV IGNORE_WARNINGS=1
