@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:buster-slim
 
 MAINTAINER Larry Howard <larry.howard@vanderbilt.edu>
 

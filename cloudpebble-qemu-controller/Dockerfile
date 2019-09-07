@@ -1,5 +1,5 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python2:xenial
+FROM gfunkmonk/python2:bionic
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install -y \
@@ -11,7 +11,7 @@ RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
 #RUN mkdir /qemu && cd /qemu && \
 #  curl -L https://github.com/gfunkmonk/qemu/archive/v2.5.0-pebble5.tar.gz | tar xz --strip 1 && \
   ./configure \
-     --enable-tcg-interpreter \
+#     --enable-tcg-interpreter \
      --extra-ldflags=-g \
 #     --with-coroutine=gthread \
 #     --enable-debug-tcg \
@@ -23,11 +23,11 @@ RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
 #     --extra-cflags=-DDEBUG_STM32_RCC \
 #     --extra-cflags=-DDEBUG_STM32_UART \
 #     --extra-cflags=-DDEBUG_GIC \
-     --extra-cflags=-std=gnu99 \
-     --extra-cflags=-Wno-declaration-after-statement \
-     --extra-cflags=-Wno-old-style-declaration \
-     --extra-cflags=-DSTM32_UART_NO_BAUD_DELAY \
-     --extra-cflags=-DSTM32_UART_ENABLE_OVERRUN \
+#     --extra-cflags=-std=gnu99 \
+#     --extra-cflags=-Wno-declaration-after-statement \
+#     --extra-cflags=-Wno-old-style-declaration \
+#     --extra-cflags=-DSTM32_UART_NO_BAUD_DELAY \
+#     --extra-cflags=-DSTM32_UART_ENABLE_OVERRUN \
 #     --enable-vnc \
 #     --disable-sdl \
 	&& \

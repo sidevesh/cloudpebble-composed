@@ -1,5 +1,5 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python2:xenial
+FROM gfunkmonk/python2:bionic
 
 SHELL ["/bin/bash", "-c"]
 
