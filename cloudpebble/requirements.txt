@@ -12,15 +12,12 @@ pygithub==1.14.2
 python-social-auth==0.1.23
 redis==2.10.5
 boto==2.49.0
-#boto3==1.4.4
 gevent==1.1
 psycogreen==1.0
 requests==2.22.0
 oauth2client==1.5.1
 django-bower==5.0.4
 mock==2.0.0
-# This is used for Mailchimp integration
-#mailchimp==2.0.9
 
 # These are used for Heroku hosting setup.
 dj-static==0.0.6
@@ -50,9 +47,3 @@ rsa==3.4.2
 six==1.10.0
 static3==0.6.1
 python-memcached
-django-extensions==1.6.7
-#git+https://github.com/epineda/django-yarn
-#django-storages==1.5.0
-#django-acme-challenge
-Werkzeug==0.15.6
-pyOpenSSL==19.0.0

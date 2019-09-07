@@ -299,7 +299,6 @@ INSTALLED_APPS = (
     'djcelery',
     'registration',
     'djangobower',
-    'django_extensions',
 )
 
 # This logging config prints:
