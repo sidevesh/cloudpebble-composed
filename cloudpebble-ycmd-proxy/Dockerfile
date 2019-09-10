@@ -1,24 +1,24 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python2:bionic
+FROM gfunkmonk/python:cloudpebble-base-alpine
 SHELL ["/bin/bash", "-c"]
 
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-
-RUN apt-get update && apt-get install -y \
-  cmake libtinfo5 git curl \
-   && rm -rf /var/lib/apt/lists/
+RUN apk update && apk add --no-cache ncurses5-libs nodejs npm && \
+apk add --no-cache --virtual .build-deps \
+cmake \
+gcc \
+build-base \
+python-dev \
+musl-dev
 
 # ycmd
 RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
   git reset --hard c5ae6c2915e9fb9f7c18b5ec9bf8627d7d5456fd && \
   git submodule update --init --recursive && \
+  ln -s -f /usr/lib/libncurses.so.5.9 /usr/lib/libtinfo.so.5 && \
   ./build.sh --clang-completer
 
 # Grab the toolchain
 RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
-
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
-  apt-get install -y nodejs
 
 # Install SDK 2
 RUN mkdir /sdk2 && \
@@ -31,7 +31,7 @@ RUN mkdir /sdk3 && \
   tar --strip-components=1 -xj -C /sdk3
 
 ADD requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt \
 
 COPY . /code
 WORKDIR /code
@@ -41,4 +41,17 @@ ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk
   DEBUG=yes YCMD_PORT=80 YCMD_BINARY=/ycmd/ycmd/__main__.py \
   YCMD_DEFAULT_SETTINGS=/ycmd/ycmd/default_settings.json
 
+RUN find /usr/local \
+        \( -type d -a -name test -o -name tests \) \
+        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
+        -exec rm -rf '{}' + \
+    && runDeps="$( \
+        scanelf --needed --nobanner --recursive /usr/local \
+                | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+                | sort -u \
+                | xargs -r apk info --installed \
+                | sort -u \
+    )" \
+    && apk add --virtual .rundeps $runDeps \
+    && apk del .build-deps
 CMD ["python", "proxy.py"]

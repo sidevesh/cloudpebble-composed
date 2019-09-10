@@ -1,29 +1,21 @@
-FROM jfloff/alpine-python:2.7
-ENV NPM_CONFIG_LOGLEVEL=info NODE_VERSION=10.15.3 DJANGO_VERSION=1.6 NODEJS_CHECK_SIGNATURES=no
+#FROM python:2.7.16
+FROM gfunkmonk/python:cloudpebble-base-alpine
+SHELL ["/bin/bash", "-c"]
 
-RUN apk upgrade --no-cache && apk add --no-cache gettext curl nano postgresql-dev \
- postgresql-client libpq bash py2-pip build-base zlib-dev jpeg-dev git gnupg
-
-RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
-  && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
-  && grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
-  && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
-  && rm "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc
-
-RUN npm install -g npm jshint jslint
+#RUN npm install -g npm jshint jslint
 
 # Django stuff
+RUN apk update && apk add --no-cache gettext memcached postgresql-dev nodejs npm
+
 RUN pip install psycopg2 django==1.6.2
 
 EXPOSE 8000
 
 # CloudPebble stuff
-RUN npm install -g bower && echo '{"allow_root": true}' > /root/.bowerrc
+RUN npm install -g bower jshint jslint && echo '{"allow_root": true}' > /root/.bowerrc
 
 # Grab the toolchain
-RUN mkdir /arm-cs-tools && \
-  curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-test-strip.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
-
+RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
 
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
@@ -38,7 +30,6 @@ RUN mkdir /sdk3 && \
 
 # Install SDK 3 Node dependencies
 RUN cd /sdk3 && npm install
-
 ENV WAF_NODE_PATH=/sdk3/node_modules
 
 COPY . /code
@@ -49,4 +40,5 @@ RUN rm -rf bower_components && cd /tmp && python /code/manage.py bower install &
 RUN python manage.py compilemessages
 RUN make -C /code/c-preload
 
+#RUN service memcached start
 CMD ["sh", "docker_start.sh"]

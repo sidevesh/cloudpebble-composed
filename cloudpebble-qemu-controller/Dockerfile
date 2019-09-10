@@ -1,12 +1,22 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python2:bionic
+FROM gfunkmonk/python:cloudpebble-base-alpine
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install -y \
-  libglib2.0-dev libpixman-1-dev libfdt-dev gnutls-dev curl git \
-  && rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add --no-cache --virtual .build-deps \ 
+musl-dev \
+gcc \
+make \
+pixman-dev \
+dtc-dev \
+gnutls-dev \
+libc-dev \
+linux-headers \
+python-dev \
+zlib-dev \
+glib-dev
 
-ENV IGNORE_WARNINGS=1
+RUN apk add --no-cache py2-virtualenv 
+
 RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
 #RUN mkdir /qemu && cd /qemu && \
 #  curl -L https://github.com/gfunkmonk/qemu/archive/v2.5.0-pebble5.tar.gz | tar xz --strip 1 && \
@@ -43,7 +53,7 @@ RUN mkdir /qemu-tintin-images && cd /qemu-tintin-images && \
   curl -L https://github.com/pebble/qemu-tintin-images/archive/v4.3.tar.gz | tar xz --strip 1
 
 ADD requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt \
 
 COPY . /code
 WORKDIR /code
@@ -52,5 +62,19 @@ ENV QEMU_DIR=/qemu QEMU_BIN=/qemu/arm-softmmu/qemu-system-arm PKJS_BIN=/pypkjs/p
   PKJS_VIRTUALENV=/pypkjs/.env QCON_PORT=80 QEMU_IMAGE_ROOT=/qemu-tintin-images
 
 EXPOSE $QCON_PORT
+
+RUN find /usr/local \
+        \( -type d -a -name test -o -name tests \) \
+        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
+        -exec rm -rf '{}' + \
+    && runDeps="$( \
+        scanelf --needed --nobanner --recursive /usr/local \
+                | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+                | sort -u \
+                | xargs -r apk info --installed \
+                | sort -u \
+    )" \
+    && apk add --virtual .rundeps $runDeps \
+    && apk del .build-deps
 
 CMD ["python", "controller.py"]

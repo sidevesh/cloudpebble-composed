@@ -1,10 +1,9 @@
-FROM python:2.7.16-buster
+#FROM python:2.7.16
+FROM gfunkmonk/python2:bionic
 SHELL ["/bin/bash", "-c"]
 
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-
 RUN apt-get update && apt-get install -y \
-  cmake libtinfo5  clang \
+  cmake libtinfo5 git curl \
    && rm -rf /var/lib/apt/lists/
 
 # ycmd
@@ -14,8 +13,7 @@ RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
   ./build.sh --clang-completer
 
 # Grab the toolchain
-RUN mkdir /arm-cs-tools && \
-  curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-toolsr
+RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
   apt-get install -y nodejs
