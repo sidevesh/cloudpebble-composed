@@ -57,7 +57,7 @@ class TestYCM(unittest.TestCase):
                 'dependencies': {'pebble-events': '^1.0.0'}
             })
         except subprocess.CalledProcessError as e:
-            print e.output
+            print(e.output)
             raise
         self.expect_completion(uuid, 6, 6, 'events_health_service_events_unsubscribe')
 

@@ -1,21 +1,10 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python:cloudpebble-base-alpine
+FROM gfunkmonk/qemu-base:xenial AS squashme
 SHELL ["/bin/bash", "-c"]
 
-RUN apk update && apk add --no-cache --virtual .build-deps \ 
-musl-dev \
-gcc \
-make \
-pixman-dev \
-dtc-dev \
-gnutls-dev \
-libc-dev \
-linux-headers \
-python-dev \
-zlib-dev \
-glib-dev
-
-RUN apk add --no-cache py2-virtualenv 
+RUN apt-get update && apt-get install -y \
+  libglib2.0-dev libpixman-1-dev libfdt-dev gnutls-dev curl git \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
 #RUN mkdir /qemu && cd /qemu && \
@@ -26,55 +15,43 @@ RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
 #     --with-coroutine=gthread \
 #     --enable-debug-tcg \
      --enable-debug --disable-werror --target-list="arm-softmmu" \
-#     --disable-libiscsi --disable-libnfs --disable-libusb --disable-usb-redir \
+     --disable-libiscsi --disable-libnfs --disable-libusb --disable-usb-redir \
 #     --disable-strip --disable-xen --disable-kvm --disable-user --disable-docs \
-#     --disable-gtk --disable-linux-aio --disable-curl --disable-curses --disable-vhdx \
+     --disable-gtk --disable-linux-aio --disable-curl --disable-curses --disable-vhdx \
 #     --extra-cflags=-DDEBUG_CLKTREE \
 #     --extra-cflags=-DDEBUG_STM32_RCC \
 #     --extra-cflags=-DDEBUG_STM32_UART \
 #     --extra-cflags=-DDEBUG_GIC \
-#     --extra-cflags=-std=gnu99 \
+     --extra-cflags=-std=gnu99 \
 #     --extra-cflags=-Wno-declaration-after-statement \
 #     --extra-cflags=-Wno-old-style-declaration \
 #     --extra-cflags=-DSTM32_UART_NO_BAUD_DELAY \
 #     --extra-cflags=-DSTM32_UART_ENABLE_OVERRUN \
-#     --enable-vnc \
-#     --disable-sdl \
+     --enable-vnc \
+     --disable-sdl \
 	&& \
   make clean && \
   make -j4
 
 #RUN git clone https://github.com/pebble/pypkjs.git --depth 1 --branch v1.1.1 --recursive
 RUN git clone https://github.com/pebble/pypkjs.git --depth 1 --branch master --recursive
-
+RUN pip install --no-cache virtualenv
 RUN virtualenv /pypkjs/.env && . /pypkjs/.env/bin/activate && pip install -r /pypkjs/requirements.txt
 
 RUN mkdir /qemu-tintin-images && cd /qemu-tintin-images && \
   curl -L https://github.com/pebble/qemu-tintin-images/archive/v4.3.tar.gz | tar xz --strip 1
 
 ADD requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /code
+FROM scratch
+COPY --from=squashme / /
 WORKDIR /code
 
 ENV QEMU_DIR=/qemu QEMU_BIN=/qemu/arm-softmmu/qemu-system-arm PKJS_BIN=/pypkjs/phonesim.py \
   PKJS_VIRTUALENV=/pypkjs/.env QCON_PORT=80 QEMU_IMAGE_ROOT=/qemu-tintin-images
 
 EXPOSE $QCON_PORT
-
-RUN find /usr/local \
-        \( -type d -a -name test -o -name tests \) \
-        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
-        -exec rm -rf '{}' + \
-    && runDeps="$( \
-        scanelf --needed --nobanner --recursive /usr/local \
-                | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-                | sort -u \
-                | xargs -r apk info --installed \
-                | sort -u \
-    )" \
-    && apk add --virtual .rundeps $runDeps \
-    && apk del .build-deps
 
 CMD ["python", "controller.py"]

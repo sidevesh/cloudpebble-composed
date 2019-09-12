@@ -1,62 +1,51 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python:cloudpebble-base-alpine
+FROM gfunkmonk/cloudpebble:alpine AS squashme
 SHELL ["/bin/bash", "-c"]
 
 # Django stuff
 RUN apk update && apk add --no-cache gettext \
 memcached \
-nodejs \
-npm \
-ca-certificates \
-postgresql-client
+nodejs npm \
+freetype \
+postgresql-client \
+&& rm -rf /var/cache/apk/*
 
 RUN apk add --no-cache --virtual .build-deps \
-gcc \ 
+#gcc \
 postgresql-dev \
 python-dev \
 libc-dev \
 linux-headers \
-musl-dev \
 zlib-dev \
 jpeg-dev \
-build-base \
 gettext-dev \
-cmake
+build-base \
+musl-dev \
+cmake \
+&& rm -rf /var/cache/apk/*
 
-# Install language pack
-#RUN set -ex && \
-#    wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub && \
-#    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-2.30-r0.apk && \
-#    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-bin-2.30-r0.apk && \
-#    wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.30-r0/glibc-i18n-2.30-r0.apk && \
-#    apk add glibc-bin-2.30-r0.apk glibc-i18n-2.30-r0.apk glibc-2.30-r0.apk
-
-# Iterate through all locale and install it
-# Note that locale -a is not available in alpine linux, use `/usr/glibc-compat/bin/locale -a` instead
-#COPY ./locale.md /locale.md
-#RUN cat locale.md | xargs -i /usr/glibc-compat/bin/localedef -i {} -f UTF-8 {}.UTF-8
-
-# Set the lang, you can also specify it as as environment variable through docker-compose.yml
-#ENV LANG=en_US.UTF-8 \
-#    LANGUAGE=en_US.UTF-8
+RUN npm install -g jshint jslint
 
 ENV MUSL_LOCPATH=/usr/local/share/i18n/locales/musl
 RUN cd /tmp && git clone https://github.com/rilian-la-te/musl-locales.git \
 && cd /tmp/musl-locales && cmake . && make && make install
 
-#RUN pip install psycopg2 django==1.6.2
+RUN pip install psycopg2 django==1.6.2
 
 EXPOSE 8000
 
 # CloudPebble stuff
-RUN npm install -g bower jshint jslint && echo '{"allow_root": true}' > /root/.bowerrc
+RUN npm install -g bower && echo '{"allow_root": true}' > /root/.bowerrc
 
 # Grab the toolchain
-RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
+#RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
+
+# Grab the toolchain
+RUN curl -o /tmp/arm-cs-tools.tar https://cloudpebble-vagrant.s3.amazonaws.com/arm-cs-tools-stripped.tar && \ 
+  tar -xf /tmp/arm-cs-tools.tar -C / && rm /tmp/arm-cs-tools.tar
 
 ADD requirements.txt /tmp/requirements.txt
-
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Install SDK 2
 RUN mkdir /sdk2 && \
@@ -75,7 +64,8 @@ WORKDIR /code
 
 # Bower is awful.
 RUN rm -rf bower_components && cd /tmp && python /code/manage.py bower install && mv bower_components /code/
-RUN python manage.py compilemessages && make -C /code/c-preload
+RUN python manage.py compilemessages
+RUN make -C /code/c-preload
 
 #RUN service memcached start
 RUN find /usr/local \
@@ -89,6 +79,13 @@ RUN find /usr/local \
                 | xargs -r apk info --installed \
                 | sort -u \
     )" \
-    && apk add --virtual .rundeps $runDeps \
+    && apk add --virtual .rundeps $runDeps && rm -rf /var/cache/apk/* \
     && apk del .build-deps
+
+FROM scratch
+COPY --from=squashme / /
+WORKDIR /code
+ENV WAF_NODE_PATH=/sdk3/node_modules
+
 CMD ["sh", "docker_start.sh"]
+

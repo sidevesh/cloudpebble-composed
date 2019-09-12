@@ -1,24 +1,30 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python:cloudpebble-base-alpine
+FROM gfunkmonk/cloudpebble:alpine AS squashme
 SHELL ["/bin/bash", "-c"]
 
-RUN apk update && apk add --no-cache ncurses5-libs nodejs npm && \
+RUN apk update && apk add --no-cache ncurses5-libs nodejs npm \
+  clang-dev && \
 apk add --no-cache --virtual .build-deps \
 cmake \
-gcc \
 build-base \
-python-dev \
-musl-dev
+llvm \
+python-dev
 
 # ycmd
 RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
   git reset --hard c5ae6c2915e9fb9f7c18b5ec9bf8627d7d5456fd && \
   git submodule update --init --recursive && \
   ln -s -f /usr/lib/libncurses.so.5.9 /usr/lib/libtinfo.so.5 && \
-  ./build.sh --clang-completer
+  ln -s -f /usr/lib/libclang.so.8 /usr/lib/libclang.so && \
+  cp /usr/lib/libclang.so.8 /ycmd/libclang.so && \
+  ./build.sh --clang-completer --system-libclang
 
 # Grab the toolchain
-RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
+#RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
+
+# Grab the toolchain
+RUN curl -o /tmp/arm-cs-tools.tar https://cloudpebble-vagrant.s3.amazonaws.com/arm-cs-tools-stripped.tar && \ 
+  tar -xf /tmp/arm-cs-tools.tar -C / && rm /tmp/arm-cs-tools.tar
 
 # Install SDK 2
 RUN mkdir /sdk2 && \
@@ -31,7 +37,7 @@ RUN mkdir /sdk3 && \
   tar --strip-components=1 -xj -C /sdk3
 
 ADD requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /code
 WORKDIR /code
@@ -54,4 +60,14 @@ RUN find /usr/local \
     )" \
     && apk add --virtual .rundeps $runDeps \
     && apk del .build-deps
+
+FROM scratch
+COPY --from=squashme / /
+
+WORKDIR /code
+ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk3/ \
+  YCMD_STDLIB=/arm-cs-tools/arm-none-eabi/include/ \
+  DEBUG=yes YCMD_PORT=80 YCMD_BINARY=/ycmd/ycmd/__main__.py \
+  YCMD_DEFAULT_SETTINGS=/ycmd/ycmd/default_settings.json
+
 CMD ["python", "proxy.py"]
