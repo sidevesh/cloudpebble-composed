@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import gevent.monkey; gevent.monkey.patch_all(subprocess=True)
 import socket
 import base64
@@ -13,9 +15,9 @@ import shutil
 import time
 import os
 
-from symbol_blacklist import is_valid_symbol
-import settings
-from filesync import FileSync
+from .symbol_blacklist import is_valid_symbol
+from . import settings
+from .filesync import FileSync
 
 __author__ = 'katharine'
 
@@ -145,7 +147,7 @@ class YCM(object):
                     'X-Ycm-Hmac': self._hmac(''),
                 }
                 result = requests.get("http://localhost:%d/ready" % self._port, headers=headers)
-                print result
+                print(result)
             except requests.exceptions.ConnectionError:
                 pass
             else:
@@ -171,11 +173,11 @@ class YCM(object):
         return time.time() < self._last_ping + 280
 
     def close(self):
-        print "terminating server"
+        print("terminating server")
         try:
             self._process.terminate()
         except Exception as e:
-            print "Error terminating process: %s" % e
+            print("Error terminating process: %s" % e)
         try:
             shutil.rmtree(self.files.root_dir)
         except:

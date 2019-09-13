@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import contextlib
 import json
 import os
@@ -5,8 +6,8 @@ import re
 import shutil
 import subprocess
 import zipfile
-import settings
-from projectinfo import Resource
+from . import settings
+from .projectinfo import Resource
 
 
 class NPMInstallError(Exception):
