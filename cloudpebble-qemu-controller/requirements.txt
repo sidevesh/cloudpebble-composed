@@ -5,7 +5,7 @@ MarkupSafe==1.1.1
 Werkzeug==0.15.6
 backports.ssl-match-hostname==3.7.0.1
 gevent==1.4.0
-gevent-websocket==0.9.3
+gevent-websocket==0.10.1
 greenlet>=0.4.14
 itsdangerous==1.1.0
 redis==3.3.8
