@@ -1,5 +1,4 @@
-#FROM python:2.7.16
-FROM gfunkmonk/python:cloudpebble-base-alpine AS needs-squashing
+FROM gfunkmonk/cloudpebble:alpine AS squashme
 SHELL ["/bin/bash", "-c"]
 
 RUN apk update && apk add --no-cache pixman dtc gnutls boost-libs glib zlib && \
@@ -28,15 +27,26 @@ RUN mkdir /qemu && cd /qemu && \
   make clean && \
   make -j4
 
+# compiling an older version of boost, required for this version of V8
+RUN mkdir -p /boost && cd /boost && \
+  wget http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2 && \
+  tar -xvjf boost_1_58_0.tar.bz2 && \
+  rm *.tar.bz2 && cd /boost/boost_1_58_0 && \
+  ./bootstrap.sh && \
+  ./b2 install --prefix=/usr/local --with-python --with-thread && \
+  ldconfig && \
+  ldconfig /usr/local/lib
+
 #RUN git clone https://github.com/pebble/pypkjs.git --depth 1 --branch v1.1.1 --recursive
 RUN git clone https://github.com/gfunkmonk/pypkjs.git --depth 1 --branch master --recursive && \
-  #ln -s -f /usr/lib/libboost_system.so.1.69.0 /usr/lib/libboost_system.so.1.53.0 && \
+  ln -s -f /usr/lib/libboost_system.so.1.69.0 /usr/lib/libboost_system.so.1.53.0 && \
   #ln -sf /usr/lib/libboost_python27.so /usr/lib/libboost_python.so 
-  cp libs/* /usr/lib/ && pip install --no-cache virtualenv
+  #cp libs/* /usr/lib/ && 
+  pip install --no-cache virtualenv
 
-#RUN pip install greenlet gevent && cd /pypkjs/pypkjs/PyV8 && \
-#  printf "V8_SNAPSHOT_ENABLED = False\nV8_GDB_JIT = True\nV8_BACKTRACE = False" > buildconf.py && \
-#  python setup.py build && python setup.py install
+RUN pip install greenlet gevent && cd /pypkjs/pypkjs/PyV8 && \
+  printf "V8_SNAPSHOT_ENABLED = False\nV8_GDB_JIT = True\nV8_BACKTRACE = False" > buildconf.py && \
+  python setup.py build && python setup.py install
 
 RUN virtualenv /pypkjs/.env && . /pypkjs/.env/bin/activate && pip install -r /pypkjs/requirements.txt
 
@@ -58,9 +68,10 @@ RUN find /usr/local \
     && apk add --virtual .rundeps $runDeps \
     && apk del .build-deps
 
+RUN rm -fr /boost
 COPY . /code
 FROM scratch
-COPY --from=needs-squashing / /
+COPY --from=squashme / /
 WORKDIR /code
 
 ENV QEMU_DIR=/qemu QEMU_BIN=/qemu/arm-softmmu/qemu-system-arm PKJS_BIN=/pypkjs/phonesim.py \

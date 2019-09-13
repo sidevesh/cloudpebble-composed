@@ -1,17 +1,11 @@
-FROM debian:buster-slim AS squashme
-
-ENV DEBIAN_FRONTEND noninteractive
-
-# install Ruby
-RUN apt-get update && apt-get install -yqq ruby rubygems-integration --no-install-recommends
-
-# install fake-s3
-RUN gem install fakes3 -v 0.2.5
-
-# run fake-s3
-RUN mkdir -p /fakes3_root
-FROM debian:buster-slim
-COPY --from=squashme / /
-ENTRYPOINT ["/usr/local/bin/fakes3"]
-CMD ["-r",  "/fakes3_root", "-p",  "4569"]
+FROM alpine:3.3
+MAINTAINER Bryan Talbot <bryan.talbot@ijji.com>
+WORKDIR /fakes3_root
+VOLUME ["/fakes3_root"]
 EXPOSE 4569
+CMD ["fakes3", "server", "--root",  ".", "--port",  "4569"]
+
+RUN apk add --no-cache ruby ruby-io-console
+
+RUN gem install fakes3 -v 0.2.5 --no-doc
+

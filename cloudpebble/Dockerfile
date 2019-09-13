@@ -11,7 +11,7 @@ RUN apk add --no-cache --virtual .build-deps \
 postgresql-dev \
 libc-dev linux-headers \
 zlib-dev jpeg-dev gettext-dev \
-build-base musl-dev \
+build-base musl-dev make \
 cmake gcc g++ make binutils \
 && rm -rf /var/cache/apk/*
 
@@ -37,19 +37,6 @@ RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-to
 
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
-RUN find /usr/local \
-        \( -type d -a -name test -o -name tests \) \
-        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
-        -exec rm -rf '{}' + \
-    && runDeps="$( \
-        scanelf --needed --nobanner --recursive /usr/local \
-                | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-                | sort -u \
-                | xargs -r apk info --installed \
-                | sort -u \
-    )" \
-    && apk add --virtual .rundeps $runDeps && rm -rf /var/cache/apk/* \
-    && apk del .build-deps
 
 # Install SDK 2
 RUN mkdir /sdk2 && curl -L "https://binaries.rebble.io/sdk-core/release/sdk-core-2.9.tar.bz2" | tar --strip-components=1 -xj -C /sdk2
@@ -69,10 +56,23 @@ RUN rm -rf bower_components && cd /tmp && python /code/manage.py bower install &
 RUN python manage.py compilemessages
 RUN make -C /code/c-preload
 
+RUN apk del .build-deps && find /usr/local \
+        \( -type d -a -name test -o -name tests \) \
+        -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
+        -exec rm -rf '{}' + \
+    && runDeps="$( \
+        scanelf --needed --nobanner --recursive /usr/local \
+                | awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+                | sort -u \
+                | xargs -r apk info --installed \
+                | sort -u \
+    )" \
+    && apk add --virtual .rundeps $runDeps && rm -rf /var/cache/apk/* \
+    && apk del .build-deps
+
 FROM scratch
 COPY --from=squashme / /
 WORKDIR /code
 ENV WAF_NODE_PATH=/sdk3/node_modules
 
 CMD ["sh", "docker_start.sh"]
-

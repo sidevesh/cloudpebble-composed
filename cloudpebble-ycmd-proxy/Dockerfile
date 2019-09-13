@@ -1,9 +1,9 @@
 FROM gfunkmonk/cloudpebble:alpine AS squashme
 SHELL ["/bin/bash", "-c"]
 
-RUN apk update && apk add --no-cache ncurses5-libs nodejs npm clang-dev && \
+RUN apk update && apk add --no-cache ncurses5-libs nodejs npm clang && \
   apk add --no-cache --virtual .build-deps \
-  cmake build-base llvm \
+  cmake build-base llvm clang-dev \
   gcc g++ make libc-dev
 
 # ycmd
@@ -16,14 +16,14 @@ RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
   ./build.sh --clang-completer --system-libclang
 
 # Grab the toolchain
-#RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
+RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
 
 # Grab the toolchain
-RUN curl -o /tmp/arm-cs-tools.tar https://cloudpebble-vagrant.s3.amazonaws.com/arm-cs-tools-stripped.tar && \ 
-  tar -xf /tmp/arm-cs-tools.tar -C / && rm /tmp/arm-cs-tools.tar
+#RUN curl -o /tmp/arm-cs-tools.tar https://cloudpebble-vagrant.s3.amazonaws.com/arm-cs-tools-stripped.tar && \ 
+#  tar -xf /tmp/arm-cs-tools.tar -C / && rm /tmp/arm-cs-tools.tar
 
 # Install SDK 2
-RUN mkdir /sdk2 && 
+RUN mkdir /sdk2 && \
   curl -L "https://binaries.rebble.io/sdk-core/release/sdk-core-2.9.tar.bz2" | tar --strip-components=1 -xj -C /sdk2
 
 # Install SDK 3
@@ -32,7 +32,7 @@ RUN mkdir /sdk3 && \
 
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
-RUN find /usr/local \
+RUN apk del .build-deps && find /usr/local \
         \( -type d -a -name test -o -name tests \) \
         -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
         -exec rm -rf '{}' + \
