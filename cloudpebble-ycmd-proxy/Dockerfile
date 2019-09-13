@@ -1,14 +1,10 @@
-#FROM python:2.7.16
 FROM gfunkmonk/cloudpebble:alpine AS squashme
 SHELL ["/bin/bash", "-c"]
 
-RUN apk update && apk add --no-cache ncurses5-libs nodejs npm \
-  clang-dev && \
-apk add --no-cache --virtual .build-deps \
-cmake \
-build-base \
-llvm \
-python-dev
+RUN apk update && apk add --no-cache ncurses5-libs nodejs npm clang-dev && \
+  apk add --no-cache --virtual .build-deps \
+  cmake build-base llvm \
+  gcc g++ make libc-dev
 
 # ycmd
 RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
@@ -27,26 +23,15 @@ RUN curl -o /tmp/arm-cs-tools.tar https://cloudpebble-vagrant.s3.amazonaws.com/a
   tar -xf /tmp/arm-cs-tools.tar -C / && rm /tmp/arm-cs-tools.tar
 
 # Install SDK 2
-RUN mkdir /sdk2 && \
-  curl -L "https://binaries.rebble.io/sdk-core/release/sdk-core-2.9.tar.bz2" | \
-  tar --strip-components=1 -xj -C /sdk2
+RUN mkdir /sdk2 && 
+  curl -L "https://binaries.rebble.io/sdk-core/release/sdk-core-2.9.tar.bz2" | tar --strip-components=1 -xj -C /sdk2
 
 # Install SDK 3
 RUN mkdir /sdk3 && \
-  curl -L "https://binaries.rebble.io/sdk-core/release/sdk-core-4.3.tar.bz2" | \
-  tar --strip-components=1 -xj -C /sdk3
+  curl -L "https://binaries.rebble.io/sdk-core/release/sdk-core-4.3.tar.bz2" | tar --strip-components=1 -xj -C /sdk3
 
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
-COPY . /code
-WORKDIR /code
-
-ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk3/ \
-  YCMD_STDLIB=/arm-cs-tools/arm-none-eabi/include/ \
-  DEBUG=yes YCMD_PORT=80 YCMD_BINARY=/ycmd/ycmd/__main__.py \
-  YCMD_DEFAULT_SETTINGS=/ycmd/ycmd/default_settings.json
-
 RUN find /usr/local \
         \( -type d -a -name test -o -name tests \) \
         -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) \
@@ -61,10 +46,11 @@ RUN find /usr/local \
     && apk add --virtual .rundeps $runDeps \
     && apk del .build-deps
 
+COPY . /code
 FROM scratch
 COPY --from=squashme / /
-
 WORKDIR /code
+
 ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk3/ \
   YCMD_STDLIB=/arm-cs-tools/arm-none-eabi/include/ \
   DEBUG=yes YCMD_PORT=80 YCMD_BINARY=/ycmd/ycmd/__main__.py \
