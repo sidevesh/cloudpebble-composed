@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
-from __future__ import absolute_import
 import gevent.monkey; gevent.monkey.patch_all(subprocess=True)
 
 import uuid
@@ -13,11 +11,11 @@ import collections
 import traceback
 import atexit
 
-from . import settings
-from .ycm import YCM
-from .filesync import FileSync
-from .projectinfo import ProjectInfo, RESOURCE_HEADER_NAME, MESSAGEKEY_HEADER_NAME
-from .npm_helpers import try_setup_dependencies, setup_dependencies
+import settings
+from ycm import YCM
+from filesync import FileSync
+from projectinfo import ProjectInfo, RESOURCE_HEADER_NAME, MESSAGEKEY_HEADER_NAME
+from npm_helpers import try_setup_dependencies, setup_dependencies
 
 mapping = {}
 
@@ -37,7 +35,7 @@ def spinup(content):
     messagekeys = content.get('messagekeys', [])
     resources = content.get('resources', [])
 
-    print("spinup in %s" % root_dir)
+    print "spinup in %s" % root_dir
     # Dump all the files we should need.
     for path, file_content in content['files'].iteritems():
         abs_path = os.path.normpath(os.path.join(root_dir, path))
@@ -71,7 +69,7 @@ def spinup(content):
 
     ycms = YCMHolder(filesync=filesync, projectinfo=info, ycms={})
 
-    print("created files")
+    print "created files"
     settings_path = os.path.join(root_dir, ".ycm_extra_conf.py")
 
     conf_mapping = {
@@ -96,15 +94,15 @@ def spinup(content):
                 ycms.ycms[platform] = ycm
 
     except Exception as e:
-        print("Failed to spawn ycm with root_dir %s" % root_dir)
-        print(traceback.format_exc())
+        print "Failed to spawn ycm with root_dir %s" % root_dir
+        print traceback.format_exc()
         return dict(success=False, error=str(e))
 
     # Keep track of it
     this_uuid = str(uuid.uuid4())
     mapping[this_uuid] = ycms
     # print mapping
-    print("spinup complete (%s); %s -> %s" % (platforms, this_uuid, root_dir))
+    print "spinup complete (%s); %s -> %s" % (platforms, this_uuid, root_dir)
     # victory!
     return dict(success=True, uuid=this_uuid, libraries=lib_info, npm_error=npm_error)
 
@@ -217,11 +215,11 @@ def kill_completer(process_uuid):
     global mapping
     if process_uuid in mapping:
         for platform, ycm in mapping[process_uuid].ycms.iteritems():
-            print("killing %s:%s (alive: %s)" % (process_uuid, platform, ycm.alive))
+            print "killing %s:%s (alive: %s)" % (process_uuid, platform, ycm.alive)
             ycm.close()
         del mapping[process_uuid]
     else:
-        print("no uuid %s to kill" % process_uuid)
+        print "no uuid %s to kill" % process_uuid
 
 
 def kill_completers():
@@ -238,19 +236,19 @@ def monitor_processes():
 
     def monitor(process_mapping):
         while True:
-            print("process sweep running")
+            print "process sweep running"
             gevent.sleep(20)
             to_kill = set()
 
             for process_uuid, ycms in process_mapping.iteritems():
                 for platform, ycm in ycms.ycms.iteritems():
                     if not ycm.alive:
-                        print("killing %s:%s (alive: %s)" % (process_uuid, platform, ycm.alive))
+                        print "killing %s:%s (alive: %s)" % (process_uuid, platform, ycm.alive)
                         ycm.close()
                         to_kill.add(process_uuid)
             for process_uuid in to_kill:
                 del process_mapping[process_uuid]
-            print("process sweep collected %d instances" % len(to_kill))
+            print "process sweep collected %d instances" % len(to_kill)
 
     g = gevent.spawn(monitor, mapping)
     atexit.register(lambda: g.kill())
