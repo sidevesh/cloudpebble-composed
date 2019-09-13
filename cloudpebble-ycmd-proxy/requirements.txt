@@ -4,7 +4,7 @@ Jinja2==2.10.1
 MarkupSafe==1.1.1
 Werkzeug==0.15.6
 gevent==1.4.0
-gevent-websocket==0.9.3
+gevent-websocket==0.10.1
 greenlet>=0.4.14
 itsdangerous==0.24
 requests==2.22.0
