@@ -11,17 +11,17 @@ Pillow==3.3.2
 pygithub==1.14.2
 python-social-auth==0.1.23
 redis==2.10.5
-boto==2.39.0
+boto==2.49.0
 gevent==1.4.0
-psycogreen==1.0
+psycogreen==1.0.1
 requests==2.22.0
 oauth2client==1.5.1
-django-bower==5.1.0
+django-bower==5.2.0
 mock==2.0.0
 
 # These are used for Heroku hosting setup.
 dj-static==0.0.6
-gunicorn==19.5.0
+gunicorn==19.9.0
 dj-database-url==0.3.0
 newrelic==2.50.0.39
 
@@ -47,7 +47,7 @@ rsa==3.4.2
 six==1.12.0
 static3==0.6.1
 python-memcached
-django-uwsgi
-django-websocket
-django-compat
+#django-uwsgi
+#django-websocket
+#django-compat
 
