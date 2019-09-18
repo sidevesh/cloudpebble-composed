@@ -26,7 +26,7 @@ dj-database-url==0.3.0
 newrelic==2.50.0.39
 
 # These are in the SDK requirements.txt and included here to save on Heroku deploy time.
-freetype-py==1.0
+freetype-py==2.1.0.post1
 sh==1.08
 pypng==0.0.17
 
