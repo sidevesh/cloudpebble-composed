@@ -1,29 +1,27 @@
-workflow "New workflow" {
- on = "push"
- resolves = ["Upgrade to Python 3"]
-} 
+workflow "Push it" {
+  resolves = ["Upgrade to Python 3"]
+  on = "push"
+}
 
 action "Upgrade to Python 3" {
- secrets = ["GITHUB_TOKEN"]
- uses = "cclauss/Upgrade-to-Python3@master"
+  secrets = ["GITHUB_TOKEN"]
+  uses = "cclauss/Upgrade-to-Python3@master"
 }
 
 workflow "on push" {
- on = "push" 
- resolves = ["Python Style Checker"] 
-} 
+  resolves = ["Python Style Checker"]
+  on = "push"
+}
+
 action "Python Style Checker" {
- uses = "andymckay/pycodestyle-action@master" 
-} 
+  uses = "andymckay/pycodestyle-action@master"
+}
 
+workflow "Lint Workflow" {
+  on = "push"
+  resolves = ["Lint"]
+}
 
-
-
-
-
-
-
-
-
-
-workflow "Lint Workflow" { on = "push" resolves = ["Lint"] } action "Lint" { uses = "lgeiger/pyflakes-action@master" }
+action "Lint" {
+  uses = "lgeiger/pyflakes-action@master"
+}
