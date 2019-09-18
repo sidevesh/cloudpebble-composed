@@ -63,14 +63,14 @@ services:
     ports:
       - "8002:80"
   redis:
-    #image: redis
-    image: redis:alpine
+    image: redis
+    #image: redis:alpine
     restart: unless-stopped
     volumes:
       - "./data/redis:/data"
   postgres:
-    #image: postgres
-    image: postgres:11-alpine
+    image: postgres
+    #image: postgres:11-alpine
     restart: unless-stopped
     volumes: 
       - "./data//postgres:/var/lib/postgresql/data"

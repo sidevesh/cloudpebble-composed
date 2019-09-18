@@ -85,7 +85,7 @@ ALLOWED_HOSTS = ['*']
 # List of IP addresses, as strings, that:
 # * See debug comments, when DEBUG is true
 # * Receive x-headers
-INTERNAL_IPS = ['192.168.128.1' , '172.17.0.1']
+#INTERNAL_IPS = ['192.168.128.1' , '172.17.0.1']
 
 # Close the session when user closes the browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
@@ -144,11 +144,12 @@ NUMBER_GROUPING = 3
 
 # Thousand separator symbol
 THOUSAND_SEPARATOR = ','
+
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = False
 
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale.
@@ -200,7 +201,7 @@ STATICFILES_FINDERS = (
 
 BOWER_INSTALLED_APPS = (
     'https://github.com/krisk/Fuse.git#2ec2f2c40059e135cabf2b01c8c3f96f808b8809',
-    'jquery#~2.1.3',
+    'jquery#~2.1.4',
     'underscore',
     'backbone',
     'text-encoding',
@@ -209,11 +210,11 @@ BOWER_INSTALLED_APPS = (
     'alexgorbatchev/jquery-textext',
     'codemirror#4.2.0',
     'bluebird#3.3.4',
-    'kanaka/noVNC#v0.5',
+    'kanaka/noVNC#v0.6.1',
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = _environ.get('SECRET_KEY', 'y_!-!-i!_txo$v5j(@c7m4uk^jyg)l4bf*0yqrztmax)l2027j')
+SECRET_KEY = _environ.get('SECRET_KEY', 'y_!-!-i!_txo$v5j(@c7m4uk^jyg)l4bf*0yqrztmax)l22269j')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -234,7 +235,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (

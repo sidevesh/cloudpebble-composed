@@ -1,11 +1,19 @@
-FROM alpine:3.3
-MAINTAINER Bryan Talbot <bryan.talbot@ijji.com>
-WORKDIR /fakes3_root
-VOLUME ["/fakes3_root"]
-EXPOSE 4569
-CMD ["fakes3", "server", "--root",  ".", "--port",  "4569"]
+FROM gfunkmonk/ubuntu:bionic-mini
 
-RUN apk add --no-cache ruby ruby-io-console
+MAINTAINER Larry Howard <larry.howard@vanderbilt.edu>
 
+ENV DEBIAN_FRONTEND noninteractive
+
+# install Ruby
+RUN apt-get update && apt-get install -yqq ruby rubygems-integration --no-install-recommends
+
+# install fake-s3
 RUN gem install fakes3 -v 0.2.5 --no-doc
+#RUN gem install fakes3 --no-doc
 
+# run fake-s3
+RUN mkdir -p /fakes3_root
+ENTRYPOINT ["/usr/local/bin/fakes3"]
+CMD ["-r",  "/fakes3_root", "-p",  "4569"]
+#CMD ["-r",  "/fakes3_root", "-p",  "4569", "--license", "$FAKES3_KEY"]
+EXPOSE 4569

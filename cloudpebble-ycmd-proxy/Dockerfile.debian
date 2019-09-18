@@ -1,16 +1,16 @@
 #FROM python:2.7.16
-FROM gfunkmonk/python2:bionic
+FROM gfunkmonk/python2:xenial AS squashme
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install -y \
-  cmake libtinfo5 git curl \
+  cmake libtinfo5 git curl libclang-dev clang \
    && rm -rf /var/lib/apt/lists/
 
 # ycmd
 RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
   git reset --hard c5ae6c2915e9fb9f7c18b5ec9bf8627d7d5456fd && \
   git submodule update --init --recursive && \
-  ./build.sh --clang-completer
+  ./build.sh --clang-completer --system-libclang
 
 # Grab the toolchain
 RUN mkdir /arm-cs-tools && curl -L "https://gfunkmonk.s3.amazonaws.com/arm-cs-tools-4.9-2017.01.tar.xz" | tar --strip-components=1 -xJ -C /arm-cs-tools
@@ -32,6 +32,8 @@ ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /code
+FROM scratch
+COPY --from=squashme / /
 WORKDIR /code
 
 ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk3/ \
@@ -40,3 +42,4 @@ ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk
   YCMD_DEFAULT_SETTINGS=/ycmd/ycmd/default_settings.json
 
 CMD ["python", "proxy.py"]
+
