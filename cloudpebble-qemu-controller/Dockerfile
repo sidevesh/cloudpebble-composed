@@ -12,7 +12,7 @@ RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y --no-install-recommends \
  binutils-arm-none-eabi ca-certificates libgnutls28-dev \
- libnewlib-arm-none-eabi  findutils  gcc  git libssl-dev \
+ libnewlib-arm-none-eabi findutils gcc  git libssl-dev \
  libglib2.0-dev libfdt-dev libpixman-1-dev make g++ \
  openssh-client pkgconf zlib1g-dev \
  && rm -fr /var/lib/apt/lists/*
@@ -27,8 +27,8 @@ RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
 #     --enable-debug-tcg \
      --enable-debug --disable-werror --target-list="arm-softmmu" \
      --disable-libiscsi --disable-libnfs --disable-libusb --disable-usb-redir \
-     --disable-strip --disable-xen --disable-kvm --disable-user --disable-docs \
-     --disable-gtk --disable-linux-aio --disable-curl --disable-curses --disable-vhdx \
+#     --disable-strip --disable-xen --disable-kvm --disable-user --disable-docs \
+#     --disable-gtk --disable-linux-aio --disable-curl --disable-curses --disable-vhdx \
 #     --extra-cflags=-DDEBUG_CLKTREE \
 #     --extra-cflags=-DDEBUG_STM32_RCC \
 #     --extra-cflags=-DDEBUG_STM32_UART \
@@ -36,8 +36,8 @@ RUN git clone https://github.com/gfunkmonk/qemu && cd /qemu && \
      --extra-cflags=-std=gnu99 \
 #     --extra-cflags=-Wno-declaration-after-statement \
 #     --extra-cflags=-Wno-old-style-declaration \
-     --extra-cflags=-DSTM32_UART_NO_BAUD_DELAY \
-     --extra-cflags=-DSTM32_UART_ENABLE_OVERRUN \
+#     --extra-cflags=-DSTM32_UART_NO_BAUD_DELAY \
+#     --extra-cflags=-DSTM32_UART_ENABLE_OVERRUN \
 #     --enable-vnc \
      --disable-sdl \
 	&& \
@@ -50,9 +50,9 @@ COPY --from=build /qemu /qemu
 
 RUN apt-get update \
   && apt-get upgrade -y \
-  && apt-get install -y --no-install-recommends libglib2.0-dev \
-  libfdt-dev libpixman-1-dev libgnutls28-dev git curl \
-  gcc xz-utils && rm -fr /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends libglib2.0-0 \
+  libfdt1 libpixman-1-0 libgnutls30 git curl build-essential \
+  gcc xz-utils zlib1g libpng16-16 && rm -fr /var/lib/apt/lists/*
 
 #RUN git clone https://github.com/pebble/pypkjs.git --depth 1 --branch v1.1.1 --recursive
 RUN git clone https://github.com/gfunkmonk/pypkjs.git --depth 1 --branch master --recursive
@@ -66,7 +66,13 @@ RUN mkdir /qemu-tintin-images && cd /qemu-tintin-images && \
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-RUN apt-get remove --purge gcc git curl xz-utils -y && apt-get autoremove --purge -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get remove --purge gcc git curl xz-utils build-essential -y \
+  && apt-get autoremove --purge -y \
+  #&& apt-get remove libglib2.0-dev libfdt-dev libpixman-1-dev \
+  #libgnutls28-dev zlib1g-dev libpng-dev -y \
+  && apt-get clean \
+  && rm -fr /var/lib/apt/lists/*
+
 COPY . /code
 FROM scratch
 COPY --from=squashme / /

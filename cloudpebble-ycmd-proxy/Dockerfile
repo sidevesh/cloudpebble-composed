@@ -1,12 +1,12 @@
 #FROM python:2.7.16 AS squashme
 #FROM gfunkmonk/dev:xenial AS squashme
 #FROM gfunkmonk/python2:bionic AS squashme
-FROM gfunkmonk/python:bionic-mini2 AS build
+FROM gfunkmonk/python:trusty-mini2 AS build
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install -y \
-  cmake libtinfo5 git curl libclang-dev clang \
-   && rm -rf /var/lib/apt/lists/
+   cmake libtinfo5 git curl libclang-dev clang build-essential \
+   --no-install-recommends && rm -rf /var/lib/apt/lists/
 
 # ycmd
 RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
@@ -14,8 +14,9 @@ RUN git clone https://github.com/Valloric/ycmd.git /ycmd && cd /ycmd && \
   git submodule update --init --recursive && \
   ./build.sh --clang-completer --system-libclang
 
-FROM gfunkmonk/python:bionic-mini2 AS squashme
+FROM gfunkmonk/python:trusty-mini2 AS squashme
 COPY --from=build /ycmd /ycmd
+COPY --from=build /usr/lib/llvm-3.4/lib/libclang.so /ycmd
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
   apt-get update && apt-get install --no-install-recommends -y \
@@ -50,4 +51,3 @@ ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk
   YCMD_DEFAULT_SETTINGS=/ycmd/ycmd/default_settings.json
 
 CMD ["python", "proxy.py"]
-
