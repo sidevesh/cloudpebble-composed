@@ -18,6 +18,7 @@ RUN curl -o /tmp/arm-cs-tools.tar https://cloudpebble-vagrant.s3.amazonaws.com/a
 ENV NODE_VERSION=4.4.5 NPM_CONFIG_LOGLEVEL=info
 
 # gpg keys listed at https://github.com/nodejs/node
+RUN mkdir ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf
 RUN set -ex \
   && for key in \
     9554F04D7259F04124DE6B476D5A82AC7E37093B \
@@ -44,9 +45,9 @@ RUN npm install npm -g
 ENV SDK_TWO_VERSION=2.9
 
 # Install SDK 2
-RUN mkdir /sdk2 && \
-  curl -L "https://s3.amazonaws.com/assets.getpebble.com/sdk3/sdk-core/sdk-core-${SDK_TWO_VERSION}.tar.bz2" | \
-  tar --strip-components=1 -xj -C /sdk2
+#RUN mkdir /sdk2 && \
+#  curl -L "https://s3.amazonaws.com/assets.getpebble.com/sdk3/sdk-core/sdk-core-${SDK_TWO_VERSION}.tar.bz2" | \
+#  tar --strip-components=1 -xj -C /sdk2
 
 ENV SDK_THREE_VERSION=4.3
 
@@ -61,7 +62,8 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 COPY . /code
 WORKDIR /code
 
-ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK2=/sdk2/ YCMD_PEBBLE_SDK3=/sdk3/ \
+#YCMD_PEBBLE_SDK2=/sdk2/ 
+ENV PATH="$PATH:/arm-cs-tools/bin" YCMD_PEBBLE_SDK3=/sdk3/ \
   YCMD_STDLIB=/arm-cs-tools/arm-none-eabi/include/ \
   DEBUG=yes YCMD_PORT=80 YCMD_BINARY=/ycmd/ycmd/__main__.py \
   YCMD_DEFAULT_SETTINGS=/ycmd/ycmd/default_settings.json

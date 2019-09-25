@@ -29,8 +29,8 @@ class YCMProxyException(Exception):
 
 def spinup(content):
     root_dir = tempfile.mkdtemp()
-    platforms = set(content.get('platforms', ['aplite']))
-    sdk_version = content.get('sdk', '2')
+    platforms = set(content.get('platforms', ['basalt']))
+    sdk_version = content.get('sdk', '3')
     dependencies = content.get('dependencies', {})
     messagekeys = content.get('messagekeys', [])
     resources = content.get('resources', [])
